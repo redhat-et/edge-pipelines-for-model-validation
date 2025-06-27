@@ -43,6 +43,7 @@ jobs:
     with:
       containerfile: tegra/Containerfile.podman
       dest-image: "redhat-et/rhel-bootc-tegra"
+      secrets: inherit
       tag-list: "triton-inference-server-intermediate"
       build-args: |
         BASE_IMAGE=quay.io/redhat-et/rhel-bootc-tegra:base
