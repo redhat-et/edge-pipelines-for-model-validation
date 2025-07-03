@@ -14,6 +14,17 @@ on:
     outputs:
       dest-reference:
         value: ${{ jobs.build-rhel-bootc-raw-image.outputs.dest-reference }}
+  workflow_dispatch:
+    inputs:
+      runs-on:
+        type: string
+        default: ubuntu-24.04-arm
+      config-file:
+        type: string
+        required: true
+      src-reference:
+        type: string
+        required: true
 
 jobs:
   build-rhel-bootc-raw-image:
