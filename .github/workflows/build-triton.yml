@@ -1,6 +1,11 @@
 name: Build Inference Server on RHEL Bootc Nvidia Tegra
 on:
   workflow_dispatch:
+    inputs:
+      build_microshift:
+        description: Add MicroShift to Bootc Image
+        required: true
+        type: boolean
 jobs:
   build-engine:
     uses: ./.github/workflows/run-jumpstarter-workflow.yml
@@ -40,6 +45,7 @@ jobs:
         PLAN_REPOSITORY=${{ vars.ARTIFACT_REGISTRY_HOST }}/${{ vars.ARTIFACT_REGISTRY_REPO }}:plan-repository
 
   build-triton-raw:
+    if: inputs.build_microshift == false
     uses: ./.github/workflows/build-rhel-bootc-raw-image.yml
     secrets: inherit
     needs: build-triton
@@ -57,6 +63,7 @@ jobs:
       workflow-cmd: python3 inference/tests/jmp-test-triton.py
 
   build-microshift:
+    if: inputs.build_microshift == true
     uses: ./.github/workflows/build-rhel-bootc-image.yml
     secrets: inherit
     needs: build-triton

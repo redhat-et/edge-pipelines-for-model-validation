@@ -1,0 +1,30 @@
+name: Build CUDA Tegra Image
+on:
+  workflow_dispatch:      
+jobs:
+  build-base:
+    uses: ./.github/workflows/build-rhel-bootc-image.yml
+    secrets: inherit
+    with:
+      containerfile: tegra/Containerfile.base
+      dest-image: "redhat-et/rhel-bootc-tegra"
+      tag-list: "base"
+
+  build-cuda:
+    uses: ./.github/workflows/build-rhel-bootc-image.yml
+    secrets: inherit
+    needs: build-base
+    with:
+      containerfile: tegra/Containerfile.cuda
+      dest-image: "redhat-et/rhel-bootc-tegra"
+      tag-list: "cuda"
+      build-args: |
+        BASE_IMAGE=${{ needs.build-base.outputs.dest-reference }}
+
+  build-cuda-raw:
+    uses: ./.github/workflows/build-rhel-bootc-raw-image.yml
+    secrets: inherit
+    needs: build-cuda
+    with:
+      config-file: ./tegra/config.toml
+      src-reference: ${{ needs.build-cuda.outputs.dest-reference }}

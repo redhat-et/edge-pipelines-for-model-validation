@@ -1,0 +1,11 @@
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}
+
+RUN \
+	dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/sbsa/cuda-rhel9.repo && \
+	dnf -y install cuda-toolkit-12-6
+
+RUN dnf -y install wget pip
+
+RUN /usr/local/cuda-12.6/bin/nvcc --version

@@ -1,5 +1,7 @@
 # Builds a basic RHEL Bootc image for NVIDIA Tegra SOC with Nvidia CDI enabled
 
+LABEL quay.expires-after=7d
+
 # The packages from NVIDIA's repo are only built for specific versions of RHEL, be sure to pin the exact tag
 FROM registry.redhat.io/rhel9/rhel-bootc:9.4-1730828483
 
@@ -13,7 +15,7 @@ RUN curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-co
       netavark \
       nvidia-jetpack-kmod \
       nvidia-jetpack-all \
-      nvidia-container-toolkit && \
+      nvidia-container-toolkit  && \
     sudo dnf clean all
 
 # Create and enable a systemd service to generate the NVIDIA CDI YAML file
@@ -70,3 +72,4 @@ EOF
 RUN cat <<EOF > /usr/lib/bootc/kargs.d/10-jetson.toml
 kargs = ["enforcing=0", "console=ttyTCU0,115200"]
 EOF
+
