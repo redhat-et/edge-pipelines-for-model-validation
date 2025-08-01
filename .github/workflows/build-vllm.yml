@@ -5,6 +5,7 @@ on:
       base-reference:
         type: string
         required: false
+        description: "Base bootc container reference (can be left blank)"
   workflow_call:
     inputs:
       base-reference:
@@ -26,12 +27,15 @@ jobs:
       dest-image: ${{ vars.ARTIFACT_REGISTRY_REPO }}
       dest-host: ${{ vars.ARTIFACT_REGISTRY_HOST }}
       tag-list: "vllm-worker"
+      # TODO: once we know how we're building & distributing custom wheels, make this configurable
+      # for now, just take them from Nick's Quay
       build-args: |
         BASE_IMAGE=registry.access.redhat.com/ubi9/ubi:9.6
         TORCH_WHEEL_ARTIFACT=quay.io/ncao/wheels:torch
         TORCH_LIB_ARTIFACT=quay.io/redhat-user-workloads/octo-edge-tenant/jetson-wheels-torch-lib@sha256:052c3fa3dd9d41b5f3ad44e85e165e234ec46f796210358ee42a5e25f6c36964
         VLLM_WHEEL_ARTIFACT=quay.io/ncao/wheels:vllm
 
+  # vLLM with no models. Those are added in the next job
   build-vllm-base:
     uses: ./.github/workflows/build-rhel-bootc-image.yml
     secrets: inherit

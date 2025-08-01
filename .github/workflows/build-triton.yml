@@ -5,6 +5,7 @@ on:
       base-reference:
         type: string
         required: false
+        description: "Base bootc container reference (can be left blank)"
   workflow_call:
     inputs:
       base-reference:
@@ -23,40 +24,40 @@ jobs:
     secrets: inherit
     with:
       jumpstarter-selector: ${{ vars.JUMPSTARTER_SELECTOR }}
-      image-url: ${{ needs.base-reference.outputs.base-reference }}-raw
+      image-url: ${{ vars.DEST_REGISTRY_HOST }}/${{ vars.DEST_REGISTRY_REPO }}:base-raw
       workflow-cmd: |
-        bash inference/build/jmp-build-engine.sh \
+        bash triton/build/jmp-build-engine.sh \
           ${{ vars.ARTIFACT_REGISTRY_HOST }}/${{ vars.ARTIFACT_REGISTRY_REPO }}:onnx-repository \
           ${{ vars.ARTIFACT_REGISTRY_HOST }}/${{ vars.ARTIFACT_REGISTRY_REPO }}:plan-repository
 
-  build-intermediate-triton:
+  build-triton-base:
     uses: ./.github/workflows/build-rhel-bootc-image.yml
     secrets: inherit
+    needs: base-reference
     with:
       containerfile: tegra/Containerfile.podman
       dest-host: ${{ vars.ARTIFACT_REGISTRY_HOST }}
       dest-image: ${{ vars.ARTIFACT_REGISTRY_REPO }}
-      tag-list: "triton-inference-server-intermediate"
+      tag-list: "triton-base"
       build-args: |
-        BASE_IMAGE=${{ inputs.base-image }}
+        BASE_IMAGE=${{ needs.base-reference.outputs.base-reference }}
         APP_IMAGES=nvcr.io/nvidia/tritonserver:25.05-py3-igpu
 
   build-triton:
-    needs: [build-engine, build-intermediate-triton]
+    needs: [build-engine, build-triton-base]
     uses: ./.github/workflows/build-rhel-bootc-image.yml
     secrets: inherit
     with:
-      containerfile: inference/build/Containerfile.triton
+      containerfile: triton/build/Containerfile.triton
       dest-host: ${{ vars.DEST_REGISTRY_HOST }}
       dest-image: ${{ vars.DEST_REGISTRY_REPO }}
-      tag-list: "triton-inference-server"
+      tag-list: "triton"
       extra-args: --secret id=podman-auth,src=/run/containers/0/auth.json 
       build-args: |
-        BASE_IMAGE=${{ vars.ARTIFACT_REGISTRY_HOST }}/${{ vars.ARTIFACT_REGISTRY_REPO }}:triton-inference-server-intermediate
+        BASE_IMAGE=${{ needs.build-triton-base.outputs.dest-reference }}
         PLAN_REPOSITORY=${{ vars.ARTIFACT_REGISTRY_HOST }}/${{ vars.ARTIFACT_REGISTRY_REPO }}:plan-repository
 
   build-triton-raw:
-    if: inputs.build_microshift == false
     uses: ./.github/workflows/build-rhel-bootc-raw-image.yml
     secrets: inherit
     needs: build-triton

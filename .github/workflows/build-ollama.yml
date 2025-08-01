@@ -5,6 +5,7 @@ on:
       base-reference:
         type: string
         required: false
+        description: "Base bootc container reference (can be left blank)"
   workflow_call:
     inputs:
       base-reference:
@@ -24,7 +25,8 @@ jobs:
     with:
       containerfile: ollama/Containerfile.ollama
       tag-list: "ollama-worker"
-      dest-image: "redhat-et/rhel-bootc-tegra-artifacts"
+      dest-image: ${{ vars.ARTIFACT_REGISTRY_REPO }}
+      dest-host: ${{ vars.ARTIFACT_REGISTRY_HOST }}
       build-args: |
         BASE_IMAGE=registry.access.redhat.com/ubi9/ubi:9.6
 
@@ -39,7 +41,7 @@ jobs:
       # In this case, DAT_IMAGES lists models from a Quay model saddle
       build-args: |
         BASE_IMAGE=${{ needs.base-reference.outputs.base-reference }}
-        APP_IMAGES=${{ needs.build-ollama.outputs.dest-reference }}
+        APP_IMAGES=${{ needs.build-ollama-container.outputs.dest-reference }}
         DAT_IMAGES=quay.io/ncao/modelsaddle-catalog:gemma3-4b quay.io/ncao/modelsaddle-catalog:gemma3-4b quay.io/ncao/modelsaddle-catalog:granite3.2-vision-2b
 
   build-ollama-raw:

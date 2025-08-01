@@ -6,7 +6,7 @@ jobs:
     uses: ./.github/workflows/run-jumpstarter-workflow.yml
     secrets: inherit
     with:
-      jumpstarter-selector: ${{ var.JUMPSTARTER_SELECTOR }}
+      jumpstarter-selector: ${{ vars.JUMPSTARTER_SELECTOR }}
       image-url: quay.io/redhat-et/rhel-bootc-tegra:base-raw
       workflow-cmd: pytest -s
 
